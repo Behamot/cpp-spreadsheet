@@ -15,29 +15,23 @@ public:
 
     const CellInterface* GetCell(Position pos) const override;
     CellInterface* GetCell(Position pos) override;
-
     void ClearCell(Position pos) override;
 
     Size GetPrintableSize() const override;
-
     void PrintValues(std::ostream& output) const override;
-    void PrintTexts(std::ostream& output) const override;
-
-	// Можете дополнить ваш класс нужными полями и методами
-
+    void PrintText(std::ostream& output) const override;
 
 private:
-	// Можете дополнить ваш класс нужными полями и методами
-    std::deque<std::deque<std::unique_ptr<Cell>>> cells_;//[row][col]
-    Size size_;
+    std::deque<std::deque<std::unique_ptr<Cell>>> cells_;
+    size_t size_;
+
+    void RefreshSize();
     
-    size_t GetNullptrCountInEnd(size_t row);
-    size_t GetEmptyRowsCountInEnd();
-    
-    void RecalculateSize();
+    size_t GetNullCount(size_t row);
+    size_t GetEmptyRowsCount();
     
     void PrintValues(std::ostream& output, size_t row) const;
-    void PrintTexts(std::ostream& output, size_t row) const;
+    void PrintText(std::ostream& output, size_t row) const;
     
-    void ThrowOnInvalidPosition(Position pos) const;
+    void ThrowInvalidPosition(Position pos) const;
 };
