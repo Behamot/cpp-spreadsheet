@@ -3,44 +3,49 @@
 #include "common.h"
 #include "formula.h"
 
+
+#include <functional>
+#include <unordered_set>
+#include <optional>
+
+class Sheet;
+
 class Cell : public CellInterface {
 public:
-    Cell(SheetInterface& sheet);
+    Cell(Sheet& sheet);
     ~Cell();
 
     void Set(std::string text, Position position);
-    void Clear();
+    void Clear(Position position);
 
     Value GetValue() const override;
     std::string GetText() const override;
-	
-	
-	
-private:
+    std::vector<Position> GetReferencedCells() const override;
 
-	SheetInterface& sheet_;
+private:
+	Sheet& sheet_;
     class Impl;
     class EmptyImpl;
     class TextImpl;
     class FormulaImpl;
-    std::unique_ptr<Impl> impl_;
+	class NumberImpl;
+	std::unique_ptr<Impl> impl_;
 
-	std::optional<Value> cash_;
-	
-	std::unique_set<Position> depends_on_cells_;
-	std::unique_set<Position> cells_depend_;
-	
+	mutable std::optional<Value> cash_;
+
+	std::unordered_set<Position> depends_on_cells_{};
+	std::unordered_set<Position> cells_depend_{};
+
 	void ResetCash();
-	
-	void DependsOn(Position position);
-	void NotDependsOn(Position position);
 
-	void InsertDependency(Position position);
-	void RemoveDependency(Position position);
-	void InsertDependantCell(Position position);
-	void RemoveDependantCell(Position position);
+	void InsertDependency(Position this_position, Position other_position);
+	void InsertDependency(Position this_position, const std::unordered_set<Position>& other_positions);
+	void RemoveDependency(Position this_position, Position other_position);
+	void RemoveDependency(Position this_position);
+
+	void CheckCircularReference(std::unordered_set<Position>& positions, std::unordered_set<Position>& already_check, Position throw_position);
+	void CheckCircularReference(std::unordered_set<Position>& positions, Position throw_position);
 	
-	void CheckCircularReference(std::unique_set<Position>& checked, Position throw_pos);
-	
-	
+	void SetFormula(std::string text, Position position);
+	bool ContainsInDependencies(const std::unordered_set<Position>& positions) const;
 };
